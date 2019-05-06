@@ -1,4 +1,4 @@
-class efd::efdwriters(
+class efd::efd_writers(
   String $lsst_sal_repo_url,
   Array $efdwriter_topic_type,
   Array $efdwriters_subsystem_list,
