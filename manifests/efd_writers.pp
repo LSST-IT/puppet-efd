@@ -1,5 +1,6 @@
 class efd::efd_writers(
   String $lsst_sal_repo_url,
+  String $lsst_efd_host,
   Array $efdwriter_topic_type,
   Array $efdwriters_subsystem_list,
   Array $db_type,
@@ -37,7 +38,7 @@ class efd::efd_writers(
   # Still don't know where the setup.env file will be
   file_line{ 'Add LSST_EFD_HOST variable' :
     path => "${ts_sal_path}/setupEFD.env",
-    line => 'export LSST_EFD_HOST=localhost',
+    line => "export LSST_EFD_HOST=${lsst_efd_host}",
   }
 
   $efdwriters_subsystem_list.each | String $subsystem | {
