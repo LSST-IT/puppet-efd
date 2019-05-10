@@ -1,11 +1,15 @@
 class efd::efd_writers(
   String $lsst_sal_repo_url,
   String $lsst_efd_host,
+  String $ts_EFDruntime_version,
+  String $ts_sal_path,
+  String $setup_filename,
   Array $efdwriter_topic_type,
   Array $efdwriters_subsystem_list,
   Array $db_type,
 ){
-    # configure the repo we want to use
+
+  # configure the repo we want to use
   yumrepo { 'lsst_sal':
     enabled  => 1,
     descr    => 'LSST Sal Repo',
@@ -13,15 +17,10 @@ class efd::efd_writers(
     gpgcheck => 0,
   }
 
-  package{'OpenSpliceDDS':
-    ensure  => '6.9.0-1',
-    require => Yumrepo['lsst_sal']
-  }
-
+  # ts_EFDruntime will resolve its own dependencies and will install the rigth version of OpenSpliceDDS
   package{ 'ts_EFDruntime':
-    ensure  => '3.9.0',
-    require => Package['OpenSpliceDDS'],
-    notify  => Exec['Systemd daemon reload']
+    ensure => $ts_EFDruntime_version,
+    notify => Exec['Systemd daemon reload']
   }
 
   exec{'Systemd daemon reload':
@@ -30,15 +29,14 @@ class efd::efd_writers(
     refreshonly => true
   }
 
-  #$ts_efd_writers = lookup('ts::efd::ts_efd_writers')
-  #$ts_xml_subsystems = lookup('ts_xml::ts_xml_subsystems')
+  file{ "${ts_sal_path}/${setup_filename}":
+    ensure => present,
+  }
 
-  $ts_sal_path = "/opt/lsst/ts_sal/"
-
-  # Still don't know where the setup.env file will be
   file_line{ 'Add LSST_EFD_HOST variable' :
-    path => "${ts_sal_path}/setupEFD.env",
-    line => "export LSST_EFD_HOST=${lsst_efd_host}",
+    path    => "${ts_sal_path}/${setup_filename}",
+    line    => "export LSST_EFD_HOST=${lsst_efd_host}",
+    require => File["${ts_sal_path}/${setup_filename}"]
   }
 
   $efdwriters_subsystem_list.each | String $subsystem | {
