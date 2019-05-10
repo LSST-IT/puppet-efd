@@ -1,7 +1,11 @@
+# Class to deploy all EFD writers, it handles the ts_EFDruntime rpm installation plus configurations as:
+# LSST_DDS_DOMAIN
+# Loading the systemd units.
+# Verifying that al the desired EFD writers are running.
 class efd::efd_writers(
   String $lsst_sal_repo_url,
   String $lsst_efd_host,
-  String $ts_EFDruntime_version,
+  String $ts_efdruntime_version,
   String $ts_sal_path,
   String $setup_filename,
   Array $efdwriter_topic_type,
@@ -19,7 +23,7 @@ class efd::efd_writers(
 
   # ts_EFDruntime will resolve its own dependencies and will install the rigth version of OpenSpliceDDS
   package{ 'ts_EFDruntime':
-    ensure => $ts_EFDruntime_version,
+    ensure => $ts_efdruntime_version,
     notify => Exec['Systemd daemon reload']
   }
 

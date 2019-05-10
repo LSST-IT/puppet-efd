@@ -1,8 +1,9 @@
+# This class aims to configure a InfluxDB instance to be used as EFD Database
 class efd::efd_influxdb(
   String $influx_admin_user,
   String $influx_admin_password,
   String $efd_user,
-  String $efd_password, 
+  String $efd_password,
 ){
   class {'influxdb::server':
     ensure                 => 'present',
@@ -39,9 +40,9 @@ class efd::efd_influxdb(
     onlyif  => "test $(influx -execute 'show databases' -username '${influx_admin_user}' \
                 -password '${influx_admin_password}' &> /dev/null; echo $? ) -eq 1",
     require => Service['influxdb'],
-  } ~>
+  }
 
-  exec{'Create EFD database on influxdb':
+  ~> exec{'Create EFD database on influxdb':
     path    => ['/usr/bin','/usr/sbin'],
     command => "influx -username '${influx_admin_user}' -password '${influx_admin_password}' \
                 -execute \"CREATE DATABASE EFD\"",
@@ -49,9 +50,9 @@ class efd::efd_influxdb(
     onlyif  => "test $(influx -username '${influx_admin_user}' -password '${influx_admin_password}' \
                 -execute \"SHOW DATABASES\" | grep EFD | wc -l ) -lt 1",
 
-  } ~>
+  }
 
-  exec{'Create EFD user on influxdb':
+  ~> exec{'Create EFD user on influxdb':
     path    => ['/usr/bin','/usr/sbin'],
     command => "influx -username '${influx_admin_user}' -password '${influx_admin_password}' \
                 -execute \"CREATE USER ${efd_user} WITH PASSWORD '${efd_password}'\"",
@@ -59,9 +60,9 @@ class efd::efd_influxdb(
     onlyif  => "test $(influx -username '${influx_admin_user}' -password '${influx_admin_password}' \
                 -execute \"SHOW USERS\" | grep ${efd_user} | wc -l ) -lt 1",
 
-  } ~>
+  }
 
-  exec{'Grant all access to EFD':
+  ~> exec{'Grant all access to EFD':
     path    => ['/usr/bin','/usr/sbin'],
     command => "influx -username '${influx_admin_user}' -password '${influx_admin_password}' \
                 -execute \"GRANT ALL ON EFD TO ${efd_user}\"",
@@ -72,7 +73,6 @@ class efd::efd_influxdb(
                 ],
     onlyif  => "test $(influx -username '${influx_admin_user}' -password '${influx_admin_password}' \
                 -execute \"SHOW GRANTS FOR ${efd_user}\" | grep -i EFD | wc -l ) -lt 1",
-
   }
 
 }

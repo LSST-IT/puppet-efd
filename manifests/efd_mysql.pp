@@ -1,3 +1,4 @@
+# This class aims to configure a MySQL instance to be used as EFD Database
 class efd::efd_mysql(
   String $mysql_admin_password,
   String $efd_user,
@@ -36,12 +37,12 @@ class efd::efd_mysql(
     service => 'mysql',
   }
 
-/*   exec{ 'Adjust SELinux to allow MySQL':
+exec{ 'Adjust SELinux to allow MySQL':
     path        => [ '/usr/bin', '/bin', '/usr/sbin' , '/usr/local/bin'],
     refreshonly => true,
     command     => 'setsebool -P nis_enabled 1 ; setsebool -P mysql_connect_any 1',
     onlyif      => "test ! -z $\"(which setsebool)\"" # This executes the command only if setsebool command exists
-  } */
+  }
 
   exec{ 'Mysql password reset':
     path        => [ '/usr/bin', '/bin', '/usr/sbin' , '/usr/local/bin'],
@@ -53,7 +54,8 @@ class efd::efd_mysql(
 
   exec{ 'Executing initial setup' :
     path        => [ '/usr/bin', '/bin', '/usr/sbin' , '/usr/local/bin'],
-    command     => "sleep 10; mysql -u root -p'${mysql_admin_password}' -e \"CREATE DATABASE EFD; CREATE USER ${efd_user}@localhost IDENTIFIED BY '${efd_password}'; \
+    command     => "sleep 10; mysql -u root -p'${mysql_admin_password}' -e \
+                \"CREATE DATABASE EFD; CREATE USER ${efd_user}@localhost IDENTIFIED BY '${efd_password}'; \
                 GRANT ALL PRIVILEGES ON EFD.* TO ${efd_user}@localhost ; \"",
     refreshonly => true,
     require     => [Package['mariadb-server'],
